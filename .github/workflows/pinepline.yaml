@@ -8,6 +8,12 @@ on:
     branches:
       - main
 
+env:
+  DOCKER_IMAGE_NAME: system-metrics-agent
+  DOCKER_TAG: ${{ github.sha }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,7 +39,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t system-metrics-agent .
+          docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }} .
 
       - name: Log in to Docker Registry
         uses: docker/login-action@v3
@@ -43,11 +49,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker image to registry
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push Docker image to registr
         run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker tag system-metrics-agent my-docker-registry/system-metrics-agent:latest
-          docker push my-docker-registry/system-metrics-agent:latest
+          docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }}
